@@ -4,13 +4,14 @@ import "time"
 
 // Document represents a Granola meeting note
 type Document struct {
-	ID            string    `json:"id"`
-	Title         string    `json:"title"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
-	NotesMarkdown string    `json:"notes_markdown"`
-	NotesPlain    string    `json:"notes_plain"`
-	Summary       string    `json:"summary"`
+	ID              string                 `json:"id"`
+	Title           string                 `json:"title"`
+	CreatedAt       time.Time              `json:"created_at"`
+	UpdatedAt       time.Time              `json:"updated_at"`
+	NotesMarkdown   string                 `json:"notes_markdown"`
+	NotesPlain      string                 `json:"notes_plain"`
+	Summary         string                 `json:"summary"`
+	LastViewedPanel map[string]interface{} `json:"last_viewed_panel"`
 }
 
 // ListDocumentsRequest is the request body for get-documents
