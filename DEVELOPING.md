@@ -8,7 +8,7 @@
 ## Setup
 
 ```bash
-git clone https://github.com/mrm/granola-cli.git
+git clone https://github.com/MrMaksimize/granola-cli.git
 cd granola-cli
 go mod tidy
 ```
