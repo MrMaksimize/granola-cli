@@ -1,4 +1,4 @@
-module github.com/mrm/granola-cli
+module github.com/MrMaksimize/granola-cli
 
 go 1.25.6
 

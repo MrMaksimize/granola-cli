@@ -1,6 +1,6 @@
 package main
 
-import "github.com/mrm/granola-cli/cmd"
+import "github.com/MrMaksimize/granola-cli/cmd"
 
 func main() {
 	cmd.Execute()

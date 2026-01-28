@@ -7,8 +7,8 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/mrm/granola-cli/internal/api"
-	"github.com/mrm/granola-cli/internal/auth"
+	"github.com/MrMaksimize/granola-cli/internal/api"
+	"github.com/MrMaksimize/granola-cli/internal/auth"
 	"github.com/spf13/cobra"
 )
 
