@@ -4,3 +4,6 @@ granola
 # IDE
 .idea/
 .vscode/
+
+# AI assistants
+.serena/
