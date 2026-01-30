@@ -15,7 +15,7 @@ import (
 var searchCmd = &cobra.Command{
 	Use:   "search <query>",
 	Short: "Search meeting notes",
-	Long:  `Search meeting notes by title (case-insensitive).`,
+	Long:  `Search meeting notes by title and content (case-insensitive).`,
 	Args:  cobra.ExactArgs(1),
 	RunE:  runSearch,
 }
@@ -32,25 +32,31 @@ func runSearch(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	client := api.NewClient(token)
+	client := newAPIClient(token)
 	docs, err := client.ListDocuments(100, 0)
 	if err != nil {
 		return err
 	}
 
-	// Client-side filtering
-	var matches []api.Document
+	// Client-side filtering: match title and content
+	var matches []searchMatch
 	for _, doc := range docs {
-		if strings.Contains(strings.ToLower(doc.Title), query) {
-			matches = append(matches, doc)
+		inTitle := strings.Contains(strings.ToLower(doc.Title), query)
+		inContent := strings.Contains(strings.ToLower(doc.NotesMarkdown), query)
+		if inTitle || inContent {
+			matches = append(matches, searchMatch{Doc: doc, InTitle: inTitle, InContent: inContent})
 		}
 	}
 
 	if jsonOutput {
-		return outputSearchJSON(matches)
+		matchDocs := make([]api.Document, len(matches))
+		for i, m := range matches {
+			matchDocs[i] = m.Doc
+		}
+		return outputSearchJSON(matchDocs)
 	}
 
-	return outputSearchText(matches, query)
+	return outputSearchTextWithLocation(matches, query)
 }
 
 func outputSearchJSON(docs []api.Document) error {
@@ -74,29 +80,47 @@ func outputSearchJSON(docs []api.Document) error {
 	return enc.Encode(out)
 }
 
-func outputSearchText(docs []api.Document, query string) error {
-	if len(docs) == 0 {
+type searchMatch struct {
+	Doc       api.Document
+	InTitle   bool
+	InContent bool
+}
+
+func outputSearchTextWithLocation(matches []searchMatch, query string) error {
+	if len(matches) == 0 {
 		fmt.Printf("No notes found matching '%s'\n", query)
 		return nil
 	}
 
-	fmt.Printf("Found %d note(s) matching '%s'\n\n", len(docs), query)
+	fmt.Printf("Found %d note(s) matching '%s'\n\n", len(matches), query)
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(w, "ID\tCreated\tTitle")
-	fmt.Fprintln(w, "──\t───────\t─────")
+	fmt.Fprintln(w, "ID\tCreated\tMatch\tTitle")
+	fmt.Fprintln(w, "──\t───────\t─────\t─────")
 
-	for _, doc := range docs {
-		title := doc.Title
+	for _, m := range matches {
+		title := m.Doc.Title
 		if len(title) > 50 {
 			title = title[:47] + "..."
 		}
-		fmt.Fprintf(w, "%s\t%s\t%s\n",
-			doc.ID[:8],
-			doc.CreatedAt.Format("Jan 02"),
+		matchLoc := matchLocation(m.InTitle, m.InContent)
+		fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
+			m.Doc.ID[:8],
+			m.Doc.CreatedAt.Format("Jan 02"),
+			matchLoc,
 			title,
 		)
 	}
 
 	return w.Flush()
+}
+
+func matchLocation(inTitle, inContent bool) string {
+	if inTitle && inContent {
+		return "title+content"
+	}
+	if inTitle {
+		return "title"
+	}
+	return "content"
 }

@@ -31,7 +31,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	client := api.NewClient(token)
+	client := newAPIClient(token)
 	docs, err := client.ListDocuments(listLimit, 0)
 	if err != nil {
 		return err
